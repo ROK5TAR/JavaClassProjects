@@ -1,0 +1,369 @@
+//Class project to create coffe shop app with validations. complete order with alert dialog.
+	
+import javafx.application.*;
+import javafx.event.*; //action for the button, textfield, handler for the listener
+import javafx.geometry.Insets;// spacing around the components.
+import javafx.scene.text.Font; //apply font style
+import javafx.scene.text.FontPosture;//apply font regular or italic
+import javafx.scene.control.Alert.*; // access to dialog box,access to the type of Alert
+import javafx.scene.*;
+import javafx.scene.control.*; //components from Javafx
+import javafx.scene.layout.*; //layout for GridPane
+import javafx.stage.Stage; // show the scene
+import java.text.*;//formatting the numbers
+
+
+public class MorningLift extends Application implements EventHandler<ActionEvent>
+{
+    //instance variable
+    float subTotalFloat = 0.00f;
+    boolean headerDisplayed = false;
+    
+    //Create components (objects) to view in the window 
+    TextField nameTextField = new TextField();
+    TextField quantityTextField = new TextField();
+    Button addToOrderButton =  new Button("        Add to order        ");
+    Button completeOrderButton =  new Button("      Complete order      ");
+    Button clearButton = new Button("              Clear              ");
+    TextArea invoiceTextArea = new TextArea();
+    ScrollPane paneScrollPane = new ScrollPane();
+    Label programmerLabel = new Label("                  Programmed by:");
+    Label companyNameLabel = new Label("           Morning Lift Coffee Shop");
+	
+    //radio buttons for the size
+    RadioButton mochaRadioButton = new RadioButton("  Mocha   ");
+    RadioButton latteRadioButton = new RadioButton("  Latte  ");
+    RadioButton dripRadioButton = new RadioButton("  Drip  ");
+    //object to make the radio button mutually exclusive
+    ToggleGroup sizeToggleGroup = new ToggleGroup();
+
+    GridPane mainGridPane = new GridPane();
+    
+    //Font object of Calibri, Italic, size 20
+    Font companyFont = Font.font("Calibri",FontPosture.ITALIC,20);
+	
+    public static void main(String[] args)
+    {
+       //create an object of the class and override the start method 
+       launch(args);		
+    }
+	
+    public MorningLift()
+    {		
+        //calls the designClass method
+        designClass();
+
+        // calls the addAction method
+        addAction();    
+    }
+	
+    public void designClass()
+    {
+        //set horizontal spacing and vertical spacing
+        mainGridPane.setHgap(8);
+        mainGridPane.setVgap(15);
+        //set the padding to the mainGridPane
+        mainGridPane.setPadding(new Insets(10, 10, 0, 25));
+        //Set the font to the company label
+        companyNameLabel.setFont(companyFont);
+
+        //set toggle group to the radio buttons
+        mochaRadioButton.setToggleGroup(sizeToggleGroup );
+        latteRadioButton.setToggleGroup(sizeToggleGroup );
+        dripRadioButton.setToggleGroup(sizeToggleGroup );
+
+        //disable the complete order button
+        completeOrderButton.setDisable(true);
+
+        //set the scroll pane to the invoice text area
+        paneScrollPane.setContent(invoiceTextArea);
+        paneScrollPane.setFitToWidth(true);
+        paneScrollPane.setPrefWidth(200);
+        paneScrollPane.setPrefHeight(200);
+
+        //add the components to the main pane
+        mainGridPane.add(companyNameLabel,0,0,2,1);
+        mainGridPane.add(new Label(" Name      "),0,1);
+        mainGridPane.add(nameTextField,1,1);
+        mainGridPane.add(new Label(" Quantity   "),0,2);
+        mainGridPane.add(quantityTextField,1,2);
+        mainGridPane.add(mochaRadioButton,0,3);
+        mainGridPane.add(latteRadioButton,0,4);
+        mainGridPane.add(dripRadioButton,0,5);
+        mainGridPane.add(addToOrderButton,1,4);
+        mainGridPane.add(completeOrderButton,0,6);
+        mainGridPane.add(clearButton,1,6);
+        mainGridPane.add(paneScrollPane,0,7,2,1);
+        mainGridPane.add(programmerLabel,0,8,2,1);
+    }
+	
+    public void addAction()
+    {
+        //add the objects to the setOnAction
+        quantityTextField.setOnAction(this);
+        addToOrderButton.setOnAction(this);
+        completeOrderButton.setOnAction(this);
+        clearButton.setOnAction(this);
+    }
+	
+    public void handle(ActionEvent evtActionEvent)
+    {
+        //get the object that triggered the event
+        Object sourceObject = evtActionEvent.getSource();
+       
+        //which object triggered the event
+        if(sourceObject == addToOrderButton || sourceObject == quantityTextField)
+        {
+            // call the validation method and if it returns a true then call addToOrder
+            if(validation())
+                addToOrder();
+        }
+        else if(sourceObject == completeOrderButton)
+        {           
+            // call the purchase method
+            completeOrder(subTotalFloat);
+        }
+        else if(sourceObject == clearButton)
+        {
+            // call the clearFields method
+            clearFields();
+        }
+    }
+	
+    public boolean selectRadioButton()
+    {
+        //create local variable
+        boolean selectedBoolean;
+
+        //check if any radio button is selected
+        if(mochaRadioButton.isSelected()||latteRadioButton.isSelected()||dripRadioButton.isSelected())
+        {
+                selectedBoolean = true;//assign true if selected
+        }
+        else
+        {
+                selectedBoolean = false;// assign false if selected
+        }
+        return selectedBoolean;	//return the selectedBoolean where it was called
+    }
+	
+    public boolean validation()
+    {
+        //create a local variable
+        boolean validationBoolean;
+
+        //check if the text field objects are not blank
+        //and a radio button object is selected then validation passed
+        if(!(nameTextField.getText()).equals(""))
+        {
+            if(!(quantityTextField.getText()).equals(""))
+            {
+                if(selectRadioButton())
+                {
+                    //validation passes
+                    validationBoolean = true; 
+                }
+                else
+                {
+                    //if validation fails - dialog boxes with error messages to the user
+                    AlertDialog("Morning Lift","Invalid selection","Select a coffee");
+                    mochaRadioButton.requestFocus();
+                    validationBoolean = false;
+                }
+            }
+            else
+            {
+                AlertDialog("Morning Lift","Invalid quantity", "Please enter quantity");
+                quantityTextField.requestFocus();
+                validationBoolean = false;
+            }
+        }
+        else
+        {
+            AlertDialog("Morning Lift","Invalid name","Please enter name");
+            nameTextField.requestFocus();
+            validationBoolean = false;
+        }
+        //returns validationBoolean to where it was called
+        return validationBoolean;
+    } 
+	
+    public void AlertDialog(String titleString, String headerString, String messageString)
+    {
+	//creates an object Alert of type Error
+	Alert alert = new Alert(AlertType.ERROR);
+    	alert.setTitle(titleString);
+    	alert.setHeaderText(headerString);
+    	alert.setContentText(messageString);
+    	alert.showAndWait();	
+    }
+		
+    public void addToOrder()
+    {
+        //create local variables
+        int quantityInteger; 
+        float itemCostFloat = 0.00f;
+        final float MOCHA_FLOAT = 3.95f;
+        final float LATTE_FLOAT = 3.75f;
+        final float DRIP_FLOAT = 2.50f;
+
+        try
+        {
+            //in the try block to check if the user enters a number for quantity
+            //convert to int datatype
+            quantityInteger = Integer.parseInt(quantityTextField.getText());
+           
+            //calculate the totals for the customer
+            if (mochaRadioButton.isSelected()) 
+            {
+                subTotalFloat += quantityInteger * MOCHA_FLOAT;
+                itemCostFloat = quantityInteger * MOCHA_FLOAT;
+            } 
+            else if (latteRadioButton.isSelected()) 
+            {
+                subTotalFloat += quantityInteger * LATTE_FLOAT;
+                itemCostFloat = quantityInteger * LATTE_FLOAT;
+            }
+            else if (dripRadioButton.isSelected())
+            {
+                subTotalFloat += quantityInteger * DRIP_FLOAT;
+                itemCostFloat = quantityInteger * DRIP_FLOAT;
+            }
+            
+            //call the displayPurchase method to display output
+            displayOrder(itemCostFloat);
+            
+            //clear quantity and radio butoons and set focus to quantity
+            quantityTextField.setText("");
+            mochaRadioButton.setSelected(false);
+            latteRadioButton.setSelected(false);
+            dripRadioButton.setSelected(false);
+            quantityTextField.requestFocus();
+            
+            //enable complete order button
+            completeOrderButton.setDisable(false);
+        }
+        catch(NumberFormatException err)
+        {
+            //if the user doesn't enter a number for quantity
+            //AlertDialog will alert the user
+            //quantityTextField will be selected and have the focus
+             AlertDialog("Morning Lift","Invalid number", "Please enter quantity");
+            quantityTextField.selectAll();
+            quantityTextField.requestFocus();
+        }
+}
+	
+    public void displayOrder(float itemCostFloat)
+{
+      
+    // create a DecimalFormat object to format currency values
+    DecimalFormat valueDecimalFormat = new DecimalFormat("$#0.00");
+
+    // check if header has been displayed
+    if (!headerDisplayed) 
+    {
+        //output header to text area with formatted strings
+        String formattedName = String.format("%-12s", "Name");
+        String formattedQuantity = String.format("%-16s", "Quantity");
+        String formattedType = String.format("%-14s", "Type");
+        String formattedItemCost = String.format("%-10s", "Item cost");
+        invoiceTextArea.appendText(String.format("%s%s%s%s\n", formattedName, formattedQuantity, formattedType, formattedItemCost));
+
+        // set headerDisplayed to true
+        headerDisplayed = true;
+    }
+
+    //output order to text area with formatted strings
+    String formattedNameValue = String.format("%-14s", nameTextField.getText());
+    String formattedQuantityValue = String.format("%-20s", quantityTextField.getText());
+    String formattedTypeValue = "";
+    if (mochaRadioButton.isSelected()) 
+    {
+        formattedTypeValue = String.format("%-12s", "Mocha");
+    } 
+    else if (latteRadioButton.isSelected()) 
+    {
+        formattedTypeValue = String.format("%-15s", "Latte");
+    } 
+    else if (dripRadioButton.isSelected()) 
+    {
+        formattedTypeValue = String.format("%-15s", "Drip");
+    }
+    String formattedItemCostValue = String.format("%-10s", valueDecimalFormat.format(itemCostFloat));
+    invoiceTextArea.appendText(String.format("%s%s%s%s\n", formattedNameValue, formattedQuantityValue, 
+            formattedTypeValue, formattedItemCostValue));
+}
+   
+    public void clearFields()
+    {
+        //clear the text fields
+        nameTextField.setText("");
+        quantityTextField.setText("");
+
+        //set radio button to not be selected
+        mochaRadioButton.setSelected(false);
+        latteRadioButton.setSelected(false);
+        dripRadioButton.setSelected(false);
+
+        //place the cursor back in the name text field
+        nameTextField.requestFocus();
+    }
+ 
+    public void completeOrder(float subTotalFloat)
+    {
+        // local variables
+        float taxFloat;
+        float totalFloat;
+        final float SALES_TAX_FLOAT = 0.095f;
+        
+        //calculations for tax and total
+        taxFloat = subTotalFloat * SALES_TAX_FLOAT;
+        totalFloat = subTotalFloat + taxFloat;
+
+        //Format the values to currency format
+        DecimalFormat valueDecimalFormat = new DecimalFormat("$#0.00");
+        
+        // create a new alert popup
+        Alert alert = new Alert(AlertType.INFORMATION);
+
+        // set the title and header text of the alert
+        alert.setTitle("Order Complete");
+        alert.setHeaderText("Thank you for your order!");
+
+
+        // format the message for the alert
+        String messageString = String.format("Subtotal: %s\nTax: %s\nTotal Order Cost: %s", 
+                                valueDecimalFormat.format(subTotalFloat), 
+                                valueDecimalFormat.format(taxFloat), 
+                                valueDecimalFormat.format(totalFloat));
+
+        // set the content text of the alert and show it
+        alert.setContentText(messageString);
+        alert.showAndWait();       
+        
+        //clear text area
+        invoiceTextArea.clear(); 
+        
+        //call the clearTextfields method to clear text fields 
+        clearFields();
+        
+        //disable button
+        completeOrderButton.setDisable(true);
+        
+        //set focus back at name
+        nameTextField.requestFocus();
+    }
+	
+    public void start(Stage primaryStage) throws Exception 
+    {
+        //Set the title Morning Lift in the title bar on the pane
+        primaryStage.setTitle("Morning Lift");
+        //create an object Scene, scene with mainGridPane width of 350 and height at 500				
+        Scene scene= new Scene(mainGridPane, 350, 500);
+        //set the scene in the primaryStage object
+        primaryStage.setScene(scene);
+        //make the primaryStage object visible
+        primaryStage.show();
+    }
+}
