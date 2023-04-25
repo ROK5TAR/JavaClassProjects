@@ -121,7 +121,7 @@ public class MorningLift extends Application implements EventHandler<ActionEvent
         else if(sourceObject == completeOrderButton)
         {           
             // call the purchase method
-            completeOrder(subTotalFloat);
+            completeOrder();
         }
         else if(sourceObject == clearButton)
         {
@@ -310,7 +310,7 @@ public class MorningLift extends Application implements EventHandler<ActionEvent
         nameTextField.requestFocus();
     }
  
-    public void completeOrder(float subTotalFloat)
+    public void completeOrder()
     {
         // local variables
         float taxFloat;
